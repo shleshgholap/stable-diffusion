@@ -1,0 +1,42 @@
+# Inference config for text-to-image generation
+
+model:
+  # Checkpoint path (safetensors or diffusers format)
+  checkpoint_path: null  # Set to model path
+  
+  # Or load from components
+  vae_path: null
+  unet_path: null
+  text_encoder_path: null
+  
+  # Model type
+  model_type: "sd1.5"  # sd1.4, sd1.5, sd2.0, sd2.1
+
+inference:
+  # Generation parameters
+  num_inference_steps: 50
+  guidance_scale: 7.5
+  
+  # Image dimensions
+  height: 512
+  width: 512
+  
+  # Sampling
+  scheduler: "ddpm"  # ddpm, ddim, pndm, euler
+  eta: 0.0  # For DDIM (0 = deterministic, 1 = DDPM-like)
+  
+  # Negative prompt
+  negative_prompt: ""
+  
+  # Batch generation
+  num_images_per_prompt: 1
+  batch_size: 1
+
+output:
+  output_dir: "./outputs/text2img"
+  save_intermediates: false
+  save_metadata: true
+
+device: "cuda"
+dtype: "float16"
+seed: null  # Random if not set

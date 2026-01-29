@@ -1,0 +1,109 @@
+# SD-scale training config for latent diffusion
+# Requires multi-GPU and large datasets
+
+model:
+  # U-Net denoiser (SD 1.x architecture)
+  unet:
+    in_channels: 4
+    out_channels: 4
+    model_channels: 320
+    num_res_blocks: 2
+    attention_resolutions: [4, 2, 1]
+    channel_mult: [1, 2, 4, 4]
+    num_heads: 8
+    use_text_conditioning: true
+    context_dim: 768
+    transformer_depth: 1
+    use_linear_in_transformer: false
+    
+  # VAE (frozen, load pretrained)
+  vae:
+    pretrained_path: null  # Set to path or HF model
+    in_channels: 3
+    latent_channels: 4
+    embed_dim: 4
+    scaling_factor: 0.18215
+    
+  # Text encoder (frozen, CLIP)
+  text_encoder:
+    model_name: "openai/clip-vit-large-patch14"
+    max_length: 77
+
+scheduler:
+  type: "ddpm"
+  num_train_timesteps: 1000
+  beta_start: 0.00085
+  beta_end: 0.012
+  beta_schedule: "scaled_linear"
+  prediction_type: "epsilon"  # or "v_prediction"
+
+training:
+  # Distributed training
+  distributed: true
+  num_gpus: 8
+  
+  # Batch and optimization
+  batch_size: 32  # Per GPU
+  learning_rate: 1.0e-4
+  weight_decay: 0.01
+  warmup_steps: 10000
+  max_steps: 1000000
+  gradient_accumulation_steps: 1
+  max_grad_norm: 1.0
+  mixed_precision: "fp16"  # or "bf16"
+  
+  # EMA
+  ema_decay: 0.9999
+  ema_update_after_step: 100
+  
+  # Classifier-free guidance training
+  cfg_dropout_prob: 0.1
+  
+  # Checkpointing
+  save_every: 5000
+  sample_every: 1000
+  resume_from: null
+  
+  # Data
+  image_size: 512
+  latent_size: 64
+  num_workers: 8
+  
+  # SNR weighting (Min-SNR-5)
+  snr_gamma: 5.0
+
+data:
+  # WebDataset for large-scale training
+  type: "webdataset"
+  train_shards: "/path/to/shards/train-{00000..99999}.tar"
+  val_shards: "/path/to/shards/val-{00000..00099}.tar"
+  
+  # Alternatively, folder dataset
+  # type: "folder"
+  # data_dir: "/path/to/images"
+  
+  # Data augmentation
+  random_flip: true
+  center_crop: true
+  
+logging:
+  log_dir: "./logs/sd_scale"
+  tensorboard: true
+  wandb: true
+  wandb_project: "stable-diffusion"
+  log_every: 100
+  
+validation:
+  prompts:
+    - "a photo of a cat"
+    - "a painting of a sunset over mountains"
+    - "a futuristic cityscape"
+  num_inference_steps: 50
+  guidance_scale: 7.5
+
+seed: 42
+
+# Hardware requirements note:
+# - 8x A100 (40GB) or equivalent recommended
+# - ~2TB storage for LAION-5B subset
+# - Training time: ~2-4 weeks for convergence

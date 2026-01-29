@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stable-diffusion-scratch"
+version = "0.1.0"
+description = "End-to-end implementation of Stable Diffusion from scratch"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "transformers>=4.30.0",
+    "einops>=0.6.0",
+    "tqdm>=4.65.0",
+    "Pillow>=9.5.0",
+    "numpy>=1.24.0",
+    "safetensors>=0.3.0",
+    "omegaconf>=2.3.0",
+]
+
+[project.optional-dependencies]
+train = [
+    "accelerate>=0.20.0",
+    "tensorboard>=2.13.0",
+    "webdataset>=0.2.0",
+]
+dev = [
+    "matplotlib>=3.7.0",
+]
+all = [
+    "stable-diffusion-scratch[train,dev]",
+]

@@ -1,0 +1,67 @@
+# Toy training config for latent diffusion with text conditioning
+# Small-scale version for validation
+
+model:
+  # U-Net denoiser
+  unet:
+    in_channels: 4  # Latent channels from VAE
+    out_channels: 4
+    model_channels: 256
+    num_res_blocks: 2
+    attention_resolutions: [8, 4]
+    channel_mult: [1, 2, 4]
+    num_heads: 8
+    use_text_conditioning: true
+    context_dim: 768  # CLIP embedding dimension
+    
+  # VAE (frozen, pretrained)
+  vae:
+    in_channels: 3
+    latent_channels: 4
+    embed_dim: 4
+    scaling_factor: 0.18215
+    
+  # Text encoder (frozen, pretrained)
+  text_encoder:
+    model_name: "openai/clip-vit-base-patch32"
+    max_length: 77
+
+scheduler:
+  type: "ddpm"
+  num_train_timesteps: 1000
+  beta_start: 0.00085
+  beta_end: 0.012
+  beta_schedule: "scaled_linear"
+
+training:
+  batch_size: 8
+  learning_rate: 1.0e-5
+  weight_decay: 0.01
+  num_epochs: 50
+  gradient_accumulation_steps: 4
+  mixed_precision: true
+  ema_decay: 0.9999
+  
+  # Classifier-free guidance
+  cfg_dropout_prob: 0.1
+  
+  # Checkpointing  
+  save_every: 10
+  sample_every: 5
+  
+  # Data
+  image_size: 256
+  latent_size: 32  # image_size / 8
+  num_workers: 4
+
+data:
+  dataset: "folder"  # or "webdataset" for large scale
+  data_dir: "./data/train"
+  caption_key: "caption"
+  
+logging:
+  log_dir: "./logs/toy_latent_diffusion"
+  tensorboard: true
+  log_every: 50
+
+seed: 42
